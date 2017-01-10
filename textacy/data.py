@@ -73,7 +73,13 @@ def load_spacy(name, path=None, create_pipeline=None, **kwargs):
         kwargs['path'] = path
     if create_pipeline is not None:
         kwargs['create_pipeline'] = create_pipeline
-    return spacy.load(name, **kwargs)
+
+    # hotfix spacy stopword bug see https://github.com/explosion/spaCy/issues/729
+    nlp = spacy.load(name, **kwargs)
+    for word in nlp.Defaults.stop_words:
+        lex = nlp.vocab[word]
+        lex.is_stop = True
+    return nlp
 
 
 @cached(_CACHE, key=partial(hashkey, 'hyphenator'))
